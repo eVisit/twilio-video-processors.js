@@ -5,6 +5,7 @@ import { Dimensions, Pipeline, WebGL2PipelineType } from '../../types';
 import { buildWebGL2Pipeline } from '../webgl2';
 
 import {
+  BLUR_FILTER_RADIUS,
   DEBOUNCE_COUNT,
   HISTORY_COUNT_MULTIPLIER,
   MASK_BLUR_RADIUS,
@@ -98,6 +99,7 @@ export abstract class BackgroundProcessor extends Processor {
   protected _outputCanvas: HTMLCanvasElement | null = null;
   protected _outputContext: CanvasRenderingContext2D | WebGL2RenderingContext | null = null;
   protected _webgl2Pipeline: ReturnType<typeof buildWebGL2Pipeline> | null = null;
+  protected _blurFilterRadius: number = BLUR_FILTER_RADIUS;
 
   private _assetsPath: string;
   private _benchmark: Benchmark;
@@ -193,6 +195,18 @@ export abstract class BackgroundProcessor extends Processor {
   }
 
   /**
+   * This function exists so we can recompile shaders and pipeline methods.
+   * This is necessary both when the target blur level changes and when
+   * the input video changes from landscape to portrait. This method is
+   * public so the consumer can reset the pipeline when they detect that the
+   * input video track's dimensions have changed.
+   */
+  resetWebgl2Pipeline() {
+    this._webgl2Pipeline?.cleanUp();
+    this._webgl2Pipeline = null;
+  }
+
+  /**
    * Apply a transform to the background of an input video frame and leaving
    * the foreground (person(s)) untouched. Any exception detected will
    * result in the frame being dropped.
@@ -238,8 +252,7 @@ export abstract class BackgroundProcessor extends Processor {
       this._outputContext = this._outputCanvas
         .getContext(this._pipeline === Pipeline.Canvas2D ? '2d' : 'webgl2') as
         CanvasRenderingContext2D | WebGL2RenderingContext;
-      this._webgl2Pipeline?.cleanUp();
-      this._webgl2Pipeline = null;
+      this.resetWebgl2Pipeline();
     }
 
     if (!this._webgl2Pipeline && this._pipeline === Pipeline.WebGL2) {
@@ -356,6 +369,7 @@ export abstract class BackgroundProcessor extends Processor {
       this._tflite,
       this._benchmark,
       this._debounce,
+      this._blurFilterRadius,
     );
     this._webgl2Pipeline.updatePostProcessingConfig({
       smoothSegmentationMask: true,

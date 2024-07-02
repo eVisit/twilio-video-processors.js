@@ -17,7 +17,8 @@ export function buildBackgroundBlurStage(
   positionBuffer: WebGLBuffer,
   texCoordBuffer: WebGLBuffer,
   personMaskTexture: WebGLTexture,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  blurPasses: number = 8,
 ): BackgroundBlurStage {
   const blurPass = buildBlurPass(
     gl,
@@ -25,7 +26,8 @@ export function buildBackgroundBlurStage(
     positionBuffer,
     texCoordBuffer,
     personMaskTexture,
-    canvas
+    canvas,
+    blurPasses,
   )
   const blendPass = buildBlendPass(gl, positionBuffer, texCoordBuffer, canvas)
 
@@ -56,7 +58,8 @@ function buildBlurPass(
   positionBuffer: WebGLBuffer,
   texCoordBuffer: WebGLBuffer,
   personMaskTexture: WebGLTexture,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  blurPasses: number,
 ) {
   const fragmentShaderSource = glsl`#version 300 es
 
@@ -163,7 +166,7 @@ function buildBlurPass(
     gl.activeTexture(gl.TEXTURE1)
     gl.bindTexture(gl.TEXTURE_2D, personMaskTexture)
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < blurPasses; i++) {
       gl.uniform2f(texelSizeLocation, 0, texelHeight)
       gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer1)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)

@@ -57,7 +57,6 @@ export interface GaussianBlurBackgroundProcessorOptions extends BackgroundProces
  */
 export class GaussianBlurBackgroundProcessor extends BackgroundProcessor {
 
-  private _blurFilterRadius: number = BLUR_FILTER_RADIUS;
   // tslint:disable-next-line no-unused-variable
   private readonly _name: string = 'GaussianBlurBackgroundProcessor';
 
@@ -87,6 +86,7 @@ export class GaussianBlurBackgroundProcessor extends BackgroundProcessor {
       radius = BLUR_FILTER_RADIUS;
     }
     this._blurFilterRadius = radius;
+    this.resetWebgl2Pipeline();
   }
 
   protected _getWebGL2PipelineType(): WebGL2PipelineType {

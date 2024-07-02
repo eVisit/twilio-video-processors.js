@@ -17,7 +17,6 @@ import {
 import { buildJointBilateralFilterStage } from './jointBilateralFilterStage'
 import { buildLoadSegmentationStage } from './loadSegmentationStage'
 import { buildResizingStage } from './resizingStage'
-import { buildSoftmaxStage } from './softmaxStage'
 
 export function buildWebGL2Pipeline(
   sourcePlayback: SourcePlayback,
@@ -28,6 +27,7 @@ export function buildWebGL2Pipeline(
   tflite: any,
   benchmark: any,
   debounce: boolean,
+  blurPasses: number = 8,
 ) {
   let shouldRunInference = true;
 
@@ -132,7 +132,8 @@ export function buildWebGL2Pipeline(
           positionBuffer,
           texCoordBuffer,
           personMaskTexture,
-          canvas
+          canvas,
+          blurPasses,
         )
       : buildBackgroundImageStage(
           gl,
